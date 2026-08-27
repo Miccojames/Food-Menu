@@ -1,0 +1,25 @@
+<template>
+  <q-layout view="hHh lpR fFf">
+    <q-page-container>
+      <router-view />
+    </q-page-container>
+  </q-layout>
+</template>
+
+<script>
+export default {
+  name: 'MainLayout',
+
+  data() {
+    return {
+      leftDrawerOpen: false
+    };
+  },
+
+  methods: {
+    toggleLeftDrawer() {
+      this.leftDrawerOpen = !this.leftDrawerOpen;
+    }
+  }
+};
+</script>
