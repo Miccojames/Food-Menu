@@ -7,68 +7,56 @@
         <p class="app-subtitle">{{ subtitle }}</p>
       </div>
       <div class="cart-badge">
-        <q-icon name="shopping_cart" size="20px" />
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="white">
+          <path d="M7 18c-1.1 0-1.99.9-1.99 2S5.9 22 7 22s2-.9 2-2-.9-2-2-2zM1 2v2h2l3.6 7.59-1.35 2.45c-.16.28-.25.61-.25.96C5 16.1 6.9 18 9 18h12v-2H9.42c-.14 0-.25-.11-.25-.25l.03-.12.9-1.63H19c.75 0 1.41-.41 1.75-1.03l3.58-6.49A1 1 0 0 0 23.45 5H5.21l-.94-2H1zm16 16c-1.1 0-1.99.9-1.99 2s.89 2 1.99 2 2-.9 2-2-.9-2-2-2z"/>
+        </svg>
         <span>{{ cartCount }} items</span>
       </div>
     </div>
   </header>
 
   <!-- MAIN CONTENT -->
-  <q-page class="page-content">
+  <main class="page-content">
     <div class="container">
       <!-- HERO SECTION -->
       <section class="hero">
         <div class="hero-content">
           <h2>Delicious food,<br>delivered to you.</h2>
           <p>Explore our crafted menu and find your next craving.</p>
-          <q-btn unelevated rounded color="deep-orange" class="q-mt-lg hero-btn" label="Explore Menu" @click="scrollToMenu" />
+          <button class="hero-btn" @click="scrollToMenu">Explore Menu</button>
         </div>
       </section>
 
-      <div class="row q-col-gutter-xl">
+      <div class="main-grid">
         <!-- MENU SECTION -->
-        <div class="col-12 col-lg-8 col-xl-9">
+        <div class="menu-section">
           <!-- SEARCH -->
-          <div class="search-wrapper q-mb-xl">
-            <q-input
-              v-model="search"
-              outlined
-              rounded
-              placeholder="What are you craving today?"
-              class="search-input"
-              bg-color="white"
-              color="deep-orange"
-            >
-              <template v-slot:prepend>
-                <q-icon name="search" color="grey-6" class="q-ml-sm" />
-              </template>
-              <template v-slot:append>
-                <q-btn
-                  unelevated
-                  rounded
-                  color="deep-orange"
-                  label="Search"
-                  class="q-px-lg q-mr-xs search-btn"
-                  @click="selectedCategory = 'All'"
-                />
-              </template>
-            </q-input>
+          <div class="search-wrapper">
+            <div class="search-inner">
+              <svg class="search-icon" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="#aaa">
+                <path d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/>
+              </svg>
+              <input
+                v-model="search"
+                type="text"
+                placeholder="What are you craving today?"
+                class="search-input"
+              />
+              <button class="search-btn" @click="selectedCategory = 'All'">Search</button>
+            </div>
           </div>
 
           <!-- CATEGORIES -->
           <div class="q-mb-xl" id="menu-categories">
             <h3 class="section-heading">Menu Categories</h3>
             <div class="categories">
-              <q-btn
+              <button
                 v-for="cat in categories"
                 :key="cat"
-                :label="cat"
-                :outline="selectedCategory !== cat"
-                :unelevated="selectedCategory === cat"
                 class="category-btn"
                 :class="{ active: selectedCategory === cat }"
                 @click="selectCategory(cat)"
-              />
+              >{{ cat }}</button>
             </div>
           </div>
 
@@ -81,14 +69,15 @@
               :style="{ animationDelay: (index * 0.1) + 's' }"
             >
               <div class="card-image-wrapper">
-                <q-img :src="food.image" class="food-img" ratio="1.3" />
-                <q-btn
-                  round
-                  :icon="food.favorite ? 'favorite' : 'favorite_border'"
+                <img :src="food.image" :alt="food.name" class="food-img" />
+                <button
                   class="fav-btn"
                   :class="{ favorited: food.favorite }"
                   @click="toggleFavorite(food)"
-                />
+                >
+                  <svg v-if="food.favorite" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="#ff5e62"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
+                  <svg v-else xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="#ccc"><path d="M16.5 3c-1.74 0-3.41.81-4.5 2.09C10.91 3.81 9.24 3 7.5 3 4.42 3 2 5.42 2 8.5c0 3.78 3.4 6.86 8.55 11.54L12 21.35l1.45-1.32C18.6 15.36 22 12.28 22 8.5 22 5.42 19.58 3 16.5 3zm-4.4 15.55l-.1.1-.1-.1C7.14 14.24 4 11.39 4 8.5 4 6.5 5.5 5 7.5 5c1.54 0 3.04.99 3.57 2.36h1.87C13.46 5.99 14.96 5 16.5 5c2 0 3.5 1.5 3.5 3.5 0 2.89-3.14 5.74-7.9 10.05z"/></svg>
+                </button>
               </div>
 
               <div class="card-body">
@@ -103,12 +92,7 @@
                   <div v-else class="status pop">🔥 Popular</div>
                 </div>
 
-                <q-btn
-                  unelevated
-                  label="Add to Order"
-                  class="add-btn"
-                  @click="addToCart(food)"
-                />
+                <button class="add-btn" @click="addToCart(food)">Add to Order</button>
               </div>
             </div>
           </div>
@@ -118,18 +102,12 @@
             <div class="empty-icon">🍽️</div>
             <h3>No matching food found</h3>
             <p>Try searching for something else or clear filters.</p>
-            <q-btn
-              rounded
-              unelevated
-              label="Clear Filters"
-              color="deep-orange"
-              @click="clearFilters"
-            />
+            <button class="clear-btn" @click="clearFilters">Clear Filters</button>
           </div>
         </div>
 
         <!-- ORDER PANEL -->
-        <div class="col-12 col-lg-4 col-xl-3">
+        <div class="sidebar">
           <div class="order-panel">
             <h3>YOUR ORDER</h3>
             <p class="order-count">{{ cartCount }} items ready</p>
@@ -140,27 +118,19 @@
                   <div class="item-name">{{ item.name }}</div>
                   <div class="item-price">₱{{ item.price }}</div>
                 </div>
-                <q-btn
-                  flat
-                  round
-                  dense
-                  icon="delete_outline"
-                  color="grey-5"
-                  class="remove-btn"
-                  @click="removeFromCart(item)"
-                />
+                <button class="remove-btn" @click="removeFromCart(item)">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/>
+                  </svg>
+                </button>
               </div>
 
               <div class="order-total">
                 <span>Total</span>
                 <span>₱{{ cartTotal }}</span>
               </div>
-              
-              <q-btn
-                unelevated
-                class="checkout-btn q-mt-md"
-                label="Proceed to Checkout"
-              />
+
+              <button class="checkout-btn">Proceed to Checkout</button>
             </div>
 
             <!-- EMPTY CART -->
@@ -169,9 +139,11 @@
               <p>Your order is empty</p>
             </div>
 
-            <div class="favorites q-mt-xl">
+            <div class="favorites">
               <div class="fav-header">
-                <q-icon name="favorite" color="red-4" size="24px" />
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="#f87171">
+                  <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+                </svg>
                 <h4>My Favorites</h4>
               </div>
               <p>You have {{ favoriteCount }} favorite items.</p>
@@ -180,7 +152,7 @@
         </div>
       </div>
     </div>
-  </q-page>
+  </main>
 </template>
 
 <script setup>
@@ -367,7 +339,7 @@ const scrollToMenu = () => {
 };
 </script>
 
-<style scoped lang="css">
+<style scoped>
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
 
 /* ANIMATIONS */
@@ -428,6 +400,7 @@ const scrollToMenu = () => {
   background: linear-gradient(135deg, #ff5e62, #ff9966);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
+  background-clip: text;
   line-height: 1.2;
 }
 
@@ -478,6 +451,7 @@ const scrollToMenu = () => {
   background-size: cover;
   background-position: center;
   box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+  background-color: #1a1a1a;
 }
 
 .hero::before {
@@ -515,8 +489,33 @@ const scrollToMenu = () => {
 
 .hero-btn {
   font-weight: 700;
-  padding: 10px 24px;
+  padding: 14px 28px;
   font-size: 16px;
+  background: linear-gradient(135deg, #ff5e62, #ff9966);
+  color: white;
+  border: none;
+  border-radius: 30px;
+  margin-top: 16px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 8px 20px rgba(255, 94, 98, 0.35);
+}
+
+.hero-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 28px rgba(255, 94, 98, 0.45);
+}
+
+/* MAIN GRID */
+.main-grid {
+  display: grid;
+  grid-template-columns: 1fr 320px;
+  gap: 40px;
+  align-items: start;
+}
+
+.menu-section {
+  min-width: 0;
 }
 
 /* SEARCH */
@@ -525,25 +524,52 @@ const scrollToMenu = () => {
   padding: 8px;
   border-radius: 40px;
   box-shadow: 0 8px 30px rgba(0,0,0,0.06);
+  margin-bottom: 40px;
+}
+
+.search-inner {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 12px;
+}
+
+.search-icon {
+  flex-shrink: 0;
 }
 
 .search-input {
-  /* Hide the border of q-input to rely on wrapper */
+  flex: 1;
+  border: none;
+  outline: none;
+  font-size: 15px;
+  font-family: 'Inter', sans-serif;
+  color: #1a1a1a;
+  background: transparent;
+  padding: 10px 4px;
 }
-:deep(.q-field__control) {
-  border: none !important;
-}
-:deep(.q-field--outlined .q-field__control:before) {
-  border: none !important;
-}
-:deep(.q-field--outlined .q-field__control:after) {
-  border: none !important;
+
+.search-input::placeholder {
+  color: #aaa;
 }
 
 .search-btn {
+  background: linear-gradient(135deg, #ff5e62, #ff9966);
+  color: white;
+  border: none;
+  border-radius: 30px;
+  padding: 12px 24px;
   font-weight: 700;
   font-size: 15px;
   letter-spacing: 0.5px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  flex-shrink: 0;
+}
+
+.search-btn:hover {
+  box-shadow: 0 8px 20px rgba(255, 94, 98, 0.35);
+  transform: translateY(-1px);
 }
 
 /* SECTION HEADING */
@@ -561,6 +587,7 @@ const scrollToMenu = () => {
   gap: 12px;
   flex-wrap: wrap;
   animation: fadeIn 0.8s ease-out 0.3s backwards;
+  margin-bottom: 40px;
 }
 
 .category-btn {
@@ -570,23 +597,25 @@ const scrollToMenu = () => {
   transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
   font-size: 14px;
   letter-spacing: 0.2px;
-  border: 1px solid #eee !important;
+  border: 1px solid #eee;
   background: white;
   color: #555;
   box-shadow: 0 4px 12px rgba(0,0,0,0.02);
+  cursor: pointer;
+  font-family: 'Inter', sans-serif;
 }
 
 .category-btn:hover {
   transform: translateY(-2px);
   box-shadow: 0 6px 15px rgba(0,0,0,0.06);
-  border-color: #ff9966 !important;
+  border-color: #ff9966;
   color: #ff5e62;
 }
 
 .category-btn.active {
   background: linear-gradient(135deg, #ff5e62, #ff9966);
   color: white;
-  border-color: transparent !important;
+  border-color: transparent;
   box-shadow: 0 8px 20px rgba(255, 94, 98, 0.3);
 }
 
@@ -619,9 +648,13 @@ const scrollToMenu = () => {
   position: relative;
   width: 100%;
   overflow: hidden;
+  aspect-ratio: 1.3;
 }
 
 .food-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
   transition: transform 0.7s ease;
 }
 
@@ -633,19 +666,22 @@ const scrollToMenu = () => {
   position: absolute;
   top: 16px;
   right: 16px;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
   background: rgba(255, 255, 255, 0.95);
   backdrop-filter: blur(4px);
-  color: #ccc;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
   box-shadow: 0 4px 12px rgba(0,0,0,0.1);
 }
 
 .fav-btn:hover {
   transform: scale(1.15);
-}
-
-.fav-btn.favorited {
-  color: #ff5e62;
 }
 
 .card-body {
@@ -715,10 +751,13 @@ const scrollToMenu = () => {
   border-radius: 14px;
   font-weight: 700;
   padding: 12px;
-  background: linear-gradient(135deg, #ff5e62, #ff9966) !important;
-  color: white !important;
+  background: linear-gradient(135deg, #ff5e62, #ff9966);
+  color: white;
+  border: none;
+  cursor: pointer;
   transition: all 0.3s ease;
   font-size: 15px;
+  font-family: 'Inter', sans-serif;
 }
 
 .add-btn:hover {
@@ -752,6 +791,24 @@ const scrollToMenu = () => {
   font-size: 16px;
   color: #777;
   margin: 0 0 24px 0;
+}
+
+.clear-btn {
+  background: linear-gradient(135deg, #ff5e62, #ff9966);
+  color: white;
+  border: none;
+  border-radius: 30px;
+  padding: 12px 28px;
+  font-weight: 700;
+  font-size: 15px;
+  cursor: pointer;
+  font-family: 'Inter', sans-serif;
+  transition: all 0.3s ease;
+}
+
+.clear-btn:hover {
+  box-shadow: 0 8px 20px rgba(255, 94, 98, 0.35);
+  transform: translateY(-2px);
 }
 
 /* ORDER PANEL */
@@ -826,10 +883,20 @@ const scrollToMenu = () => {
 }
 
 .remove-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #bbb;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
   transition: all 0.2s ease;
 }
 .remove-btn:hover {
-  color: #ff5e62 !important;
+  color: #ff5e62;
   background: #fff0f0;
 }
 
@@ -854,11 +921,15 @@ const scrollToMenu = () => {
   width: 100%;
   border-radius: 14px;
   padding: 14px;
-  background: #1a1a1a !important;
-  color: white !important;
+  background: #1a1a1a;
+  color: white;
+  border: none;
   font-weight: 700;
   font-size: 16px;
+  cursor: pointer;
   transition: transform 0.2s ease;
+  margin-top: 16px;
+  font-family: 'Inter', sans-serif;
 }
 .checkout-btn:hover {
   transform: translateY(-2px);
@@ -913,6 +984,9 @@ const scrollToMenu = () => {
 
 /* RESPONSIVE */
 @media (max-width: 1024px) {
+  .main-grid {
+    grid-template-columns: 1fr;
+  }
   .order-panel {
     position: relative;
     top: 0;
