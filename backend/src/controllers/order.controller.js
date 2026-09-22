@@ -59,6 +59,9 @@ export const createOrder = async (req, res, next) => {
 export const getOrders = async (req, res, next) => {
   try {
     const orders = await prisma.order.findMany({
+      where: {
+        status: { not: 'Cancelled' }
+      },
       include: { items: true },
       orderBy: { createdAt: 'desc' },
     });
@@ -86,8 +89,22 @@ export const getOrder = async (req, res, next) => {
 export const updateOrderStatus = async (req, res, next) => {
   try {
     const { status } = req.body;
+    const orderId = Number(req.params.id);
+
+    // Automatically remove order if cancelled
+    if (status === 'Cancelled') {
+      await prisma.order.delete({
+        where: { id: orderId }
+      });
+      return res.status(200).json({
+        success: true,
+        message: 'Order cancelled and automatically removed',
+        data: { id: orderId, status: 'Cancelled' }
+      });
+    }
+
     const order = await prisma.order.update({
-      where: { id: Number(req.params.id) },
+      where: { id: orderId },
       data: { status },
       include: { items: true },
     });

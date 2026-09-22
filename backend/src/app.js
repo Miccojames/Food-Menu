@@ -10,6 +10,7 @@ import { notFound } from './middleware/notFound.middleware.js';
 import foodRoutes from './routes/food.routes.js';
 import categoryRoutes from './routes/category.routes.js';
 import orderRoutes from './routes/order.routes.js';
+import authRoutes from './routes/auth.routes.js';
 
 const app = express();
 
@@ -41,6 +42,7 @@ app.get('/api/health', (req, res) => {
 });
 
 // Routes
+app.use('/api/auth', authRoutes);
 app.use('/api/foods', foodRoutes);
 app.use('/api/categories', categoryRoutes);
 app.use('/api/orders', orderRoutes);

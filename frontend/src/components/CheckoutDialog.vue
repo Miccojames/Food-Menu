@@ -50,6 +50,7 @@ import { ref } from 'vue';
 import { useQuasar } from 'quasar';
 import { useCartStore } from '../stores/cart.store';
 import { orderService } from '../services/order.service';
+import { authService } from '../services/auth.service.js';
 
 const props = defineProps({
   modelValue: Boolean
@@ -59,7 +60,8 @@ const emit = defineEmits(['update:modelValue', 'order-placed']);
 const $q = useQuasar();
 const cartStore = useCartStore();
 
-const customerName = ref('');
+const _user = authService.getUser();
+const customerName = ref(_user?.username || '');
 const customerContact = ref('');
 const loading = ref(false);
 

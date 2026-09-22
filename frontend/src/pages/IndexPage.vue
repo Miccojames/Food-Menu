@@ -33,7 +33,7 @@
               :key="food.id"
               :food="food"
               :is-favorite="favStore.isFavorite(food.id)"
-              :style="{ animationDelay: (index * 0.1) + 's' }"
+              :style="{ animationDelay: (index * 0.05) + 's' }"
               @add-to-cart="cartStore.addToCart"
               @toggle-favorite="favStore.toggleFavorite(food.id)"
             />
@@ -43,7 +43,7 @@
           <EmptyState v-else @clear="clearFilters" />
         </div>
 
-        <!-- ORDER PANEL -->
+        <!-- ORDER PANEL SIDEBAR -->
         <OrderPanel id="order-panel" @checkout="showCheckout = true" />
       </div>
     </div>
@@ -54,6 +54,7 @@
 
 <script setup>
 import { ref, onMounted, watch } from 'vue';
+import { useRouter } from 'vue-router';
 import { useQuasar } from 'quasar';
 import { useCartStore } from '../stores/cart.store';
 import { useFavoriteStore } from '../stores/favorite.store';
@@ -71,6 +72,7 @@ import LoadingState from '../components/LoadingState.vue';
 import EmptyState from '../components/EmptyState.vue';
 
 const $q = useQuasar();
+const router = useRouter();
 const cartStore = useCartStore();
 const favStore = useFavoriteStore();
 
@@ -123,7 +125,7 @@ const scrollToOrder = () => {
 };
 
 const onOrderPlaced = (orderId) => {
-  // Handle post-checkout if needed (like redirecting)
+  router.push('/orders/' + orderId);
 };
 
 // Watch for category changes
@@ -141,21 +143,22 @@ onMounted(() => {
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
 
 .page-content {
-  background-color: #fcfcfc;
+  background-color: #f8fafc;
   font-family: 'Inter', sans-serif;
-  padding-bottom: 80px;
+  padding: 24px 0 80px;
+  min-height: calc(100vh - 64px);
 }
 
 .container {
-  max-width: 1300px;
+  max-width: 1280px;
   margin: 0 auto;
   padding: 0 24px;
 }
 
 .main-grid {
   display: grid;
-  grid-template-columns: 1fr 320px;
-  gap: 40px;
+  grid-template-columns: 1fr 340px;
+  gap: 32px;
   align-items: start;
 }
 
@@ -169,7 +172,7 @@ onMounted(() => {
   gap: 24px;
 }
 
-@media (max-width: 900px) {
+@media (max-width: 960px) {
   .main-grid {
     grid-template-columns: 1fr;
   }
