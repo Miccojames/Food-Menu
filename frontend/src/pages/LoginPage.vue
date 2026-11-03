@@ -21,7 +21,7 @@
 
         <!-- Login Form -->
         <template v-if="mode === 'login'">
-          <h2 class="form-title">Welcome back! 👋</h2>
+          <h2 class="form-title">Welcome back! </h2>
           <p class="form-sub">Sign in to your account to continue.</p>
 
           <div class="form-group">
@@ -74,7 +74,7 @@
 
         <!-- Sign Up Form -->
         <template v-else-if="mode === 'signup'">
-          <h2 class="form-title">Create account 🎉</h2>
+          <h2 class="form-title">Create account </h2>
           <p class="form-sub">Join BiteBoard and start ordering today.</p>
 
           <div class="form-group">
