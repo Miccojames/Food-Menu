@@ -9,21 +9,22 @@ const router = createRouter({
 });
 
 router.beforeEach((to, from, next) => {
+  const loggedIn = authService.isLoggedIn();
   const user = authService.getUser();
 
   if (to.path === '/login') {
-    if (user) {
-      if (user.role === 'admin') return next('/admin');
+    if (loggedIn) {
+      if (user?.role === 'admin') return next('/admin');
       return next('/menu');
     }
     return next();
   }
 
-  if (!user) {
+  if (!loggedIn) {
     return next('/login');
   }
 
-  if (to.path === '/admin' && user.role !== 'admin') {
+  if (to.path === '/admin' && user?.role !== 'admin') {
     return next('/menu');
   }
 

@@ -4,7 +4,6 @@
     <!-- Sidebar -->
     <aside class="sidebar">
       <div class="sidebar-brand">
-        <span class="sidebar-logo">🍽️</span>
         <div>
           <div class="sidebar-title">BiteBoard</div>
           <div class="sidebar-subtitle">Admin Panel</div>
@@ -17,7 +16,6 @@
           :class="{ active: tab === 'dashboard' }"
           @click="tab = 'dashboard'"
         >
-          <span class="nav-icon">📊</span>
           <span>Dashboard</span>
         </button>
         <button
@@ -25,15 +23,20 @@
           :class="{ active: tab === 'foods' }"
           @click="tab = 'foods'"
         >
-          <span class="nav-icon">🍔</span>
           <span>Food Menu</span>
+        </button>
+        <button
+          class="nav-item"
+          :class="{ active: tab === 'categories' }"
+          @click="tab = 'categories'"
+        >
+          <span>Categories</span>
         </button>
         <button
           class="nav-item"
           :class="{ active: tab === 'orders' }"
           @click="tab = 'orders'"
         >
-          <span class="nav-icon">📦</span>
           <span>Orders</span>
           <span v-if="pendingCount > 0" class="nav-badge">{{ pendingCount }}</span>
         </button>
@@ -41,7 +44,7 @@
 
       <div class="sidebar-footer">
         <button class="logout-nav-btn" @click="logout">
-          <span>🚪</span> Logout
+          Logout
         </button>
       </div>
     </aside>
@@ -52,13 +55,14 @@
       <!-- Top Bar -->
       <div class="topbar">
         <div class="topbar-title">
-          <span v-if="tab === 'dashboard'">📊 Dashboard Overview</span>
-          <span v-else-if="tab === 'foods'">🍔 Food Menu</span>
-          <span v-else-if="tab === 'orders'">📦 Customer Orders</span>
+          <span v-if="tab === 'dashboard'">Dashboard Overview</span>
+          <span v-else-if="tab === 'foods'">Food Menu</span>
+          <span v-else-if="tab === 'categories'">Categories</span>
+          <span v-else-if="tab === 'orders'">Customer Orders</span>
         </div>
         <div class="topbar-right">
           <div class="admin-badge">
-            <span>👤</span> Admin
+            Admin
           </div>
         </div>
       </div>
@@ -69,33 +73,64 @@
         <!-- ===== DASHBOARD TAB ===== -->
         <div v-if="tab === 'dashboard'" class="tab-panel">
           <div class="stats-grid">
-            <div class="stat-card stat-orange">
-              <div class="stat-icon">📦</div>
+            <div class="stat-card stat-green">
               <div class="stat-body">
-                <div class="stat-value">{{ orders.length }}</div>
+                <div class="stat-value">₱{{ (stats.revenue ?? 0).toLocaleString() }}</div>
+                <div class="stat-label">Revenue (Ready/Completed)</div>
+              </div>
+            </div>
+            <div class="stat-card stat-orange">
+              <div class="stat-body">
+                <div class="stat-value">{{ stats.totalOrders ?? orders.length }}</div>
                 <div class="stat-label">Total Orders</div>
               </div>
             </div>
             <div class="stat-card stat-purple">
-              <div class="stat-icon">⏳</div>
               <div class="stat-body">
-                <div class="stat-value">{{ pendingCount }}</div>
+                <div class="stat-value">{{ stats.byStatus?.Pending ?? pendingCount }}</div>
                 <div class="stat-label">Pending Orders</div>
               </div>
             </div>
-            <div class="stat-card stat-green">
-              <div class="stat-icon">✅</div>
+            <div class="stat-card stat-blue">
               <div class="stat-body">
-                <div class="stat-value">{{ completedCount }}</div>
+                <div class="stat-value">{{ stats.byStatus?.Completed ?? completedCount }}</div>
                 <div class="stat-label">Completed</div>
               </div>
             </div>
-            <div class="stat-card stat-blue">
-              <div class="stat-icon">🍽️</div>
-              <div class="stat-body">
-                <div class="stat-value">{{ foods.length }}</div>
-                <div class="stat-label">Menu Items</div>
+          </div>
+
+          <!-- Orders per day (last 30 days) + Top selling -->
+          <div class="dashboard-split">
+            <div class="dash-card">
+              <div class="section-header">
+                <h2 class="section-title">Orders — Last 30 Days</h2>
               </div>
+              <div class="bar-chart">
+                <div
+                  v-for="d in dailyChart"
+                  :key="d.date"
+                  class="bar-col"
+                  :title="`${d.date}: ${d.count} order(s)`"
+                >
+                  <div class="bar" :style="{ height: barHeight(d.count) }"></div>
+                  <div class="bar-label">{{ d.day }}</div>
+                </div>
+                <div v-if="dailyChart.every(d => d.count === 0)" class="chart-empty">No orders in this period</div>
+              </div>
+            </div>
+
+            <div class="dash-card">
+              <div class="section-header">
+                <h2 class="section-title">Top Selling Items</h2>
+              </div>
+              <div v-if="stats.topItems?.length" class="top-list">
+                <div v-for="(item, i) in stats.topItems" :key="item.name" class="top-row">
+                  <span class="top-rank">#{{ i + 1 }}</span>
+                  <span class="top-name">{{ item.name }}</span>
+                  <span class="top-qty">{{ item.quantity }} sold</span>
+                </div>
+              </div>
+              <div v-else class="chart-empty">Nothing sold yet</div>
             </div>
           </div>
 
@@ -198,8 +233,8 @@
                     </label>
                   </td>
                   <td class="td-actions">
-                    <button class="action-btn edit" @click="openEditDialog(food)">✏️ Edit</button>
-                    <button class="action-btn delete" @click="confirmDelete(food)">🗑️ Delete</button>
+                    <button class="action-btn edit" @click="openEditDialog(food)">Edit</button>
+                    <button class="action-btn delete" @click="confirmDelete(food)">Delete</button>
                   </td>
                 </tr>
                 <tr v-if="foods.length === 0">
@@ -210,11 +245,56 @@
           </div>
         </div>
 
+        <!-- ===== CATEGORIES TAB ===== -->
+        <div v-if="tab === 'categories'" class="tab-panel">
+          <div class="section-header">
+            <h2 class="section-title">Categories</h2>
+            <button class="add-btn" @click="openCategoryDialog">+ Add Category</button>
+          </div>
+
+          <div class="modern-table-card">
+            <div v-if="loadingCats" class="table-loading">
+              <div class="spinner"></div>
+              Loading categories...
+            </div>
+            <table v-else class="mtable">
+              <thead>
+                <tr>
+                  <th>Name</th>
+                  <th>Description</th>
+                  <th>Foods</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr v-for="cat in categories" :key="cat.id" class="table-row">
+                  <td class="td-food-name"><div class="food-name">{{ cat.name }}</div></td>
+                  <td>{{ cat.description || '—' }}</td>
+                  <td>{{ cat._count?.foods ?? 0 }}</td>
+                  <td class="td-actions">
+                    <button class="action-btn edit" @click="openCategoryDialog(cat)">Edit</button>
+                    <button class="action-btn delete" @click="confirmDeleteCategory(cat)">Delete</button>
+                  </td>
+                </tr>
+                <tr v-if="categories.length === 0">
+                  <td colspan="4" class="empty-row">No categories yet.</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
         <!-- ===== ORDERS TAB ===== -->
         <div v-if="tab === 'orders'" class="tab-panel">
           <div class="section-header">
             <h2 class="section-title">Customer Orders</h2>
-            <button class="refresh-btn" @click="loadOrders">🔄 Refresh</button>
+            <div class="orders-controls">
+              <select v-model="orderStatusFilter" class="mform-input status-filter" @change="goOrderPage(1)">
+                <option value="">All statuses</option>
+                <option v-for="s in ['Pending','Preparing','Ready','Completed','Cancelled']" :key="s" :value="s">{{ s }}</option>
+              </select>
+              <button class="refresh-btn" @click="loadOrders">Refresh</button>
+            </div>
           </div>
 
           <div class="modern-table-card">
@@ -265,10 +345,16 @@
                   </td>
                 </tr>
                 <tr v-if="orders.length === 0">
-                  <td colspan="7" class="empty-row">No orders yet.</td>
+                  <td colspan="7" class="empty-row">No orders found.</td>
                 </tr>
               </tbody>
             </table>
+
+            <div v-if="orderPages > 1" class="pagination">
+              <button class="page-btn" :disabled="orderPage <= 1" @click="goOrderPage(orderPage - 1)">← Prev</button>
+              <span class="page-info">Page {{ orderPage }} of {{ orderPages }} ({{ orderTotal }} orders)</span>
+              <button class="page-btn" :disabled="orderPage >= orderPages" @click="goOrderPage(orderPage + 1)">Next →</button>
+            </div>
           </div>
         </div>
 
@@ -279,7 +365,7 @@
     <div class="modal-overlay" v-if="dialog" @click.self="dialog = false">
       <div class="modal-card">
         <div class="modal-header">
-          <h3 class="modal-title">{{ isEdit ? '✏️ Edit Food' : '➕ Add New Food' }}</h3>
+          <h3 class="modal-title">{{ isEdit ? 'Edit Food' : 'Add New Food' }}</h3>
           <button class="modal-close" @click="dialog = false">✕</button>
         </div>
         <div class="modal-body">
@@ -300,8 +386,16 @@
                 <input v-model.number="form.price" type="number" class="mform-input" placeholder="0.00" required />
               </div>
               <div class="mform-group">
-                <label class="mform-label">Image URL</label>
-                <input v-model="form.image" type="text" class="mform-input" placeholder="https://..." required />
+                <label class="mform-label">Image</label>
+                <div class="image-picker">
+                  <img v-if="form.image" :src="form.image" class="image-preview" alt="preview" />
+                  <div v-else class="image-preview placeholder"></div>
+                  <label class="upload-btn">
+                    Upload image
+                    <input type="file" accept="image/*" @change="uploadImage" hidden />
+                  </label>
+                </div>
+                <input v-model="form.image" type="text" class="mform-input image-url" placeholder="or paste an image URL / path" required />
               </div>
             </div>
             <div class="mform-group">
@@ -328,12 +422,38 @@
                   <input type="checkbox" v-model="form.available" />
                   <span class="toggle-track"></span>
                 </label>
-                ✅ Available
+                Available
               </label>
             </div>
             <div class="modal-footer">
               <button type="button" class="cancel-btn" @click="dialog = false">Cancel</button>
               <button type="submit" class="submit-btn">{{ isEdit ? 'Save Changes' : 'Add Food' }}</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== CATEGORY DIALOG ===== -->
+    <div class="modal-overlay" v-if="catDialog" @click.self="catDialog = false">
+      <div class="modal-card modal-card-sm">
+        <div class="modal-header">
+          <h3 class="modal-title">{{ isEditCat ? 'Edit Category' : 'New Category' }}</h3>
+          <button class="modal-close" @click="catDialog = false">✕</button>
+        </div>
+        <div class="modal-body">
+          <form @submit.prevent="saveCategory">
+            <div class="mform-group">
+              <label class="mform-label">Name</label>
+              <input v-model="catForm.name" type="text" class="mform-input" placeholder="e.g. Breakfast" required />
+            </div>
+            <div class="mform-group">
+              <label class="mform-label">Description (optional)</label>
+              <textarea v-model="catForm.description" class="mform-input mform-textarea" placeholder="Short description..."></textarea>
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="cancel-btn" @click="catDialog = false">Cancel</button>
+              <button type="submit" class="submit-btn">{{ isEditCat ? 'Save' : 'Create' }}</button>
             </div>
           </form>
         </div>
@@ -351,6 +471,7 @@ import { foodService } from '../services/food.service';
 import { categoryService } from '../services/category.service';
 import { orderService } from '../services/order.service';
 import { authService } from '../services/auth.service.js';
+import api from '../services/api.js';
 
 const $q = useQuasar();
 const router = useRouter();
@@ -365,6 +486,33 @@ const loadingOrders = ref(false);
 const dialog = ref(false);
 const isEdit = ref(false);
 const currentId = ref(null);
+
+// Dashboard stats (from /orders/stats)
+const stats = ref({});
+const dailyChart = computed(() =>
+  (stats.value.daily || []).map((d) => ({
+    ...d,
+    day: d.date.slice(8), // day-of-month
+  }))
+);
+const maxDaily = computed(() =>
+  Math.max(1, ...dailyChart.value.map((d) => d.count))
+);
+const barHeight = (count) => `${Math.round((count / maxDaily.value) * 100)}%`;
+
+// Orders pagination + filter
+const orderPage = ref(1);
+const orderPages = ref(1);
+const orderTotal = ref(0);
+const orderStatusFilter = ref('');
+const ORDERS_PAGE_SIZE = 15;
+
+// Category dialog
+const catDialog = ref(false);
+const isEditCat = ref(false);
+const currentCatId = ref(null);
+const loadingCats = ref(false);
+const catForm = ref({ name: '', description: '' });
 
 const form = ref({
   name: '',
@@ -394,7 +542,7 @@ const loadData = async () => {
   loading.value = true;
   try {
     const [foodsRes, catsRes] = await Promise.all([
-      foodService.getFoods(),
+      foodService.getFoods({ all: 'true', limit: 100 }),
       categoryService.getCategories()
     ]);
     foods.value = foodsRes.data;
@@ -407,16 +555,34 @@ const loadData = async () => {
   }
 };
 
+const loadStats = async () => {
+  try {
+    const res = await orderService.getStats();
+    stats.value = res.data;
+  } catch (error) {
+    console.error('Failed to load stats', error);
+  }
+};
+
 const loadOrders = async () => {
   loadingOrders.value = true;
   try {
-    const res = await orderService.getOrders();
+    const params = { page: orderPage.value, limit: ORDERS_PAGE_SIZE };
+    if (orderStatusFilter.value) params.status = orderStatusFilter.value;
+    const res = await orderService.getOrders(params);
     orders.value = res.data;
+    orderPages.value = res.pagination?.pages || 1;
+    orderTotal.value = res.pagination?.total || 0;
   } catch (error) {
     $q.notify({ color: 'negative', message: 'Failed to load orders' });
   } finally {
     loadingOrders.value = false;
   }
+};
+
+const goOrderPage = (p) => {
+  orderPage.value = p;
+  loadOrders();
 };
 
 const getStatusClass = (status) => {
@@ -500,7 +666,68 @@ const confirmDelete = (food) => {
       $q.notify({ color: 'positive', message: 'Food deleted' });
       loadData();
     } catch (error) {
-      $q.notify({ color: 'negative', message: 'Failed to delete' });
+      $q.notify({ color: 'negative', message: error.message || 'Failed to delete' });
+    }
+  });
+};
+
+// ===== Image upload =====
+const uploadImage = async (event) => {
+  const file = event.target.files?.[0];
+  if (!file) return;
+  const fd = new FormData();
+  fd.append('image', file);
+  try {
+    const res = await api.post('/upload/image', fd, {
+      headers: { 'Content-Type': 'multipart/form-data' }
+    });
+    form.value.image = res.data.url;
+    $q.notify({ color: 'positive', message: 'Image uploaded' });
+  } catch (error) {
+    $q.notify({ color: 'negative', message: error.message || 'Upload failed' });
+  } finally {
+    event.target.value = '';
+  }
+};
+
+// ===== Categories =====
+const openCategoryDialog = (cat = null) => {
+  isEditCat.value = !!cat;
+  currentCatId.value = cat?.id ?? null;
+  catForm.value = { name: cat?.name || '', description: cat?.description || '' };
+  catDialog.value = true;
+};
+
+const saveCategory = async () => {
+  try {
+    if (isEditCat.value) {
+      await categoryService.updateCategory(currentCatId.value, catForm.value);
+      $q.notify({ color: 'positive', message: 'Category updated' });
+    } else {
+      await categoryService.createCategory(catForm.value);
+      $q.notify({ color: 'positive', message: 'Category created' });
+    }
+    catDialog.value = false;
+    loadData();
+  } catch (error) {
+    $q.notify({ color: 'negative', message: error.message || 'Failed to save category' });
+  }
+};
+
+const confirmDeleteCategory = (cat) => {
+  $q.dialog({
+    title: 'Delete Category',
+    message: `Delete category "${cat.name}"?`,
+    cancel: true,
+    persistent: true,
+    color: 'negative'
+  }).onOk(async () => {
+    try {
+      await categoryService.deleteCategory(cat.id);
+      $q.notify({ color: 'positive', message: 'Category deleted' });
+      loadData();
+    } catch (error) {
+      $q.notify({ color: 'negative', message: error.message || 'Failed to delete' });
     }
   });
 };
@@ -508,6 +735,7 @@ const confirmDelete = (food) => {
 onMounted(() => {
   loadData();
   loadOrders();
+  loadStats();
 });
 </script>
 
@@ -543,10 +771,6 @@ onMounted(() => {
   gap: 12px;
   padding: 24px 20px;
   border-bottom: 1px solid #f0f0f0;
-}
-
-.sidebar-logo {
-  font-size: 28px;
 }
 
 .sidebar-title {
@@ -601,10 +825,6 @@ onMounted(() => {
 .nav-item.active {
   background: linear-gradient(135deg, #fff0f0, #fff5f0);
   color: #ff5e62;
-}
-
-.nav-icon {
-  font-size: 18px;
 }
 
 .nav-badge {
@@ -720,11 +940,6 @@ onMounted(() => {
 .stat-purple { background: linear-gradient(135deg, #667eea, #764ba2); color: white; }
 .stat-green  { background: linear-gradient(135deg, #11998e, #38ef7d); color: white; }
 .stat-blue   { background: linear-gradient(135deg, #2193b0, #6dd5ed); color: white; }
-
-.stat-icon {
-  font-size: 36px;
-  opacity: 0.85;
-}
 
 .stat-value {
   font-size: 36px;
@@ -1230,5 +1445,209 @@ onMounted(() => {
 .submit-btn:hover {
   transform: translateY(-1px);
   box-shadow: 0 8px 20px rgba(255,94,98,0.4);
+}
+
+/* ===== Dashboard split (chart + top items) ===== */
+.dashboard-split {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 20px;
+  margin-bottom: 32px;
+}
+
+.dash-card {
+  background: white;
+  border-radius: 16px;
+  padding: 20px 24px;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.04);
+}
+
+.bar-chart {
+  display: flex;
+  align-items: flex-end;
+  gap: 4px;
+  height: 160px;
+  padding-top: 12px;
+  position: relative;
+}
+
+.bar-col {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  align-items: center;
+  height: 100%;
+  min-width: 0;
+}
+
+.bar {
+  width: 100%;
+  max-width: 22px;
+  background: linear-gradient(180deg, #ff9966, #ff5e62);
+  border-radius: 4px 4px 0 0;
+  min-height: 3px;
+  transition: height 0.3s ease;
+}
+
+.bar-label {
+  font-size: 9px;
+  color: #aaa;
+  margin-top: 4px;
+}
+
+.chart-empty {
+  color: #aaa;
+  font-size: 14px;
+  padding: 40px 0;
+  text-align: center;
+}
+
+.top-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding-top: 8px;
+}
+
+.top-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  background: #f8fafc;
+  border-radius: 10px;
+  font-size: 14px;
+}
+
+.top-rank {
+  font-weight: 800;
+  color: #ff5e62;
+  width: 28px;
+}
+
+.top-name {
+  flex: 1;
+  font-weight: 600;
+  color: #333;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.top-qty {
+  color: #888;
+  font-size: 13px;
+}
+
+/* ===== Orders controls + pagination ===== */
+.orders-controls {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.status-filter {
+  padding: 8px 12px;
+  border-radius: 10px;
+  border: 1.5px solid #e5e5e5;
+  font-size: 13px;
+  font-weight: 600;
+  background: white;
+}
+
+.pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 16px;
+  padding: 16px;
+  border-top: 1px solid #f0f0f0;
+}
+
+.page-btn {
+  background: white;
+  border: 1.5px solid #e5e5e5;
+  border-radius: 10px;
+  padding: 8px 16px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: 'Inter', sans-serif;
+}
+
+.page-btn:hover:not(:disabled) {
+  border-color: #ff5e62;
+  color: #ff5e62;
+}
+
+.page-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.page-info {
+  font-size: 13px;
+  color: #888;
+  font-weight: 600;
+}
+
+/* ===== Image picker ===== */
+.image-picker {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+
+.image-preview {
+  width: 64px;
+  height: 64px;
+  object-fit: cover;
+  border-radius: 10px;
+  border: 1.5px solid #eee;
+  background: #f8fafc;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+}
+
+.image-preview.placeholder {
+  color: #ccc;
+}
+
+.upload-btn {
+  background: #f1f5f9;
+  border: 1.5px dashed #cbd5e1;
+  border-radius: 10px;
+  padding: 10px 16px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #555;
+  cursor: pointer;
+  font-family: 'Inter', sans-serif;
+  transition: all 0.2s ease;
+}
+
+.upload-btn:hover {
+  border-color: #ff5e62;
+  color: #ff5e62;
+  background: #fff5f5;
+}
+
+.image-url {
+  font-size: 13px;
+}
+
+/* ===== Smaller modal for categories ===== */
+.modal-card-sm {
+  max-width: 440px;
+}
+
+@media (max-width: 1100px) {
+  .dashboard-split {
+    grid-template-columns: 1fr;
+  }
 }
 </style>

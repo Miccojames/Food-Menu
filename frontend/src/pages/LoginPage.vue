@@ -181,6 +181,7 @@ const signupLoading = ref(false);
 
 const focusedField = ref('');
 
+
 const switchMode = (m) => {
   mode.value = m;
   loginError.value = '';

@@ -1,4 +1,5 @@
 import { PrismaClient } from '@prisma/client';
+import bcrypt from 'bcryptjs';
 import dotenv from 'dotenv';
 
 dotenv.config();
@@ -115,34 +116,51 @@ const foodsByCategory = {
 
 async function seedDB() {
   try {
-    console.log('🌱 Seeding Neon PostgreSQL...');
+    console.log('🌱 Seeding PostgreSQL (orders are NEVER touched by seed)...');
 
-    // Clear existing data (order matters due to FK constraints)
-    await prisma.orderItem.deleteMany();
-    await prisma.order.deleteMany();
-    await prisma.food.deleteMany();
-    await prisma.category.deleteMany();
-    console.log('🗑️  Cleared existing data');
-
-    // Insert categories and foods
-    for (const cat of categories) {
-      const created = await prisma.category.create({
-        data: {
-          name: cat.name,
-          description: cat.description,
-          foods: {
-            create: foodsByCategory[cat.name] || [],
-          },
-        },
+    // --- Admin user (upserted from env, password always hashed) ---
+    const adminUser = process.env.ADMIN_USERNAME;
+    const adminPass = process.env.ADMIN_PASSWORD;
+    if (adminUser && adminPass && adminPass !== 'change-me') {
+      const hashed = await bcrypt.hash(adminPass, 10);
+      await prisma.user.upsert({
+        where: { username: adminUser },
+        update: { password: hashed, role: 'admin' },
+        create: { username: adminUser, password: hashed, role: 'admin' },
       });
-      console.log(`✅ Seeded category: ${created.name}`);
+      console.log(`✅ Admin user ready: ${adminUser}`);
+    } else {
+      console.log('⚠️  ADMIN_USERNAME/ADMIN_PASSWORD not set (or still "change-me") — skipping admin user');
     }
 
-    console.log('🎉 Database seeded successfully!');
-    process.exit(0);
+    // --- Categories + foods (upsert: existing rows are updated, never wipes orders) ---
+    for (const cat of categories) {
+      const category = await prisma.category.upsert({
+        where: { name: cat.name },
+        update: { description: cat.description },
+        create: { name: cat.name, description: cat.description },
+      });
+
+      for (const food of foodsByCategory[cat.name] || []) {
+        const existing = await prisma.food.findFirst({ where: { name: food.name } });
+        if (existing) {
+          await prisma.food.update({
+            where: { id: existing.id },
+            data: { ...food, price: food.price, categoryId: category.id },
+          });
+        } else {
+          await prisma.food.create({
+            data: { ...food, price: food.price, categoryId: category.id },
+          });
+        }
+      }
+      console.log(`✅ Category ready: ${category.name}`);
+    }
+
+    console.log('🎉 Database seeded successfully (existing orders preserved)!');
   } catch (error) {
     console.error('❌ Seed error:', error);
-    process.exit(1);
+    process.exitCode = 1;
   } finally {
     await prisma.$disconnect();
   }

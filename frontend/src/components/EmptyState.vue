@@ -1,6 +1,5 @@
 <template>
   <div class="empty-state">
-    <div class="empty-icon">🍽️</div>
     <h3>{{ title }}</h3>
     <p>{{ message }}</p>
     <button v-if="showClear" class="clear-btn" @click="$emit('clear')">Clear Filters</button>
@@ -33,12 +32,6 @@ const props = defineProps({
   background: white;
   border-radius: 24px;
   box-shadow: 0 10px 40px rgba(0,0,0,0.03);
-}
-
-.empty-icon {
-  font-size: 80px;
-  margin-bottom: 24px;
-  animation: fadeIn 0.5s ease-out;
 }
 
 .empty-state h3 {

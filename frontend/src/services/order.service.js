@@ -1,8 +1,19 @@
 import api from './api.js';
 
 export const orderService = {
-  async getOrders() {
-    return api.get('/orders');
+  // Admin: all orders (optional params: page, limit, status)
+  async getOrders(params = {}) {
+    return api.get('/orders', { params });
+  },
+
+  // Customer: only their own orders
+  async getMyOrders() {
+    return api.get('/orders/mine');
+  },
+
+  // Admin dashboard stats
+  async getStats() {
+    return api.get('/orders/stats');
   },
 
   async getOrder(id) {

@@ -2,13 +2,18 @@
 .thumbs.db
 node_modules
 
-# .env files
-.env*
+# .env files (but keep the examples tracked)
+.env
+.env.*
+!.env.example
 
-# Quasar core related directories
-.quasar
+# Build output
 /dist
-/quasar.config.*.temporary.compiled*
+frontend/dist/
+
+# Uploaded food images (keep the folder via .gitkeep)
+backend/uploads/*
+!backend/uploads/.gitkeep
 
 # Cordova related directories and files
 /src-cordova/node_modules

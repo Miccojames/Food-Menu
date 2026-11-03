@@ -22,6 +22,8 @@ model User {
   role      Role     @default(customer)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  orders    Order[]
+  statusChanges OrderStatusHistory[]
 }
 
 model Category {
@@ -38,7 +40,7 @@ model Food {
   name        String
   categoryId  Int
   category    Category    @relation(fields: [categoryId], references: [id])
-  price       Float
+  price       Decimal     @db.Decimal(10, 2)
   description String
   image       String
   spicy       Boolean     @default(false)
@@ -50,26 +52,46 @@ model Food {
 }
 
 model Order {
-  id              Int         @id @default(autoincrement())
+  id              Int                @id @default(autoincrement())
   items           OrderItem[]
-  totalAmount     Float
-  status          OrderStatus @default(Pending)
+  totalAmount     Decimal            @db.Decimal(10, 2)
+  status          OrderStatus        @default(Pending)
   customerName    String
   customerContact String
-  createdAt       DateTime    @default(now())
-  updatedAt       DateTime    @updatedAt
+  userId          Int?
+  user            User?              @relation(fields: [userId], references: [id])
+  statusHistory   OrderStatusHistory[]
+  createdAt       DateTime           @default(now())
+  updatedAt       DateTime           @updatedAt
+
+  @@index([userId])
+  @@index([status])
+  @@index([createdAt])
 }
 
 model OrderItem {
-  id       Int   @id @default(autoincrement())
+  id       Int     @id @default(autoincrement())
   orderId  Int
-  order    Order @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  order    Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
   foodId   Int
-  food     Food  @relation(fields: [foodId], references: [id])
+  food     Food    @relation(fields: [foodId], references: [id])
   name     String
-  price    Float
+  price    Decimal @db.Decimal(10, 2)
   quantity Int
-  subtotal Float
+  subtotal Decimal @db.Decimal(10, 2)
+}
+
+model OrderStatusHistory {
+  id         Int         @id @default(autoincrement())
+  orderId    Int
+  order      Order       @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  fromStatus OrderStatus?
+  toStatus   OrderStatus
+  changedById Int?
+  changedBy  User?       @relation(fields: [changedById], references: [id])
+  createdAt  DateTime    @default(now())
+
+  @@index([orderId])
 }
 
 enum OrderStatus {

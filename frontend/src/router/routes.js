@@ -1,9 +1,9 @@
 import IndexPage from '../pages/IndexPage.vue';
 import AdminPage from '../pages/AdminPage.vue';
-import OrdersPage from '../pages/OrdersPage.vue';
 import OrderDetailsPage from '../pages/OrderDetailsPage.vue';
 import LoginPage from '../pages/LoginPage.vue';
 import MyOrdersPage from '../pages/MyOrdersPage.vue';
+import ErrorNotFound from '../pages/ErrorNotFound.vue';
 
 const routes = [
   {
@@ -23,10 +23,6 @@ const routes = [
     component: AdminPage
   },
   {
-    path: '/orders',
-    component: OrdersPage
-  },
-  {
     path: '/orders/:id',
     component: OrderDetailsPage
   },
@@ -36,7 +32,7 @@ const routes = [
   },
   {
     path: '/:catchAll(.*)*',
-    component: LoginPage // fallback to login
+    component: ErrorNotFound
   }
 ];
 

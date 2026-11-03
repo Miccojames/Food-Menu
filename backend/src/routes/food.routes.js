@@ -1,21 +1,22 @@
 import express from 'express';
 import {
+  createFood,
   getFoods,
   getFood,
-  createFood,
   updateFood,
   deleteFood
 } from '../controllers/food.controller.js';
+import { protect, requireAdmin, optionalAuth } from '../middleware/auth.middleware.js';
 
 const router = express.Router();
 
 router.route('/')
-  .get(getFoods)
-  .post(createFood);
+  .get(optionalAuth, getFoods)
+  .post(protect, requireAdmin, createFood);
 
 router.route('/:id')
   .get(getFood)
-  .put(updateFood)
-  .delete(deleteFood);
+  .put(protect, requireAdmin, updateFood)
+  .delete(protect, requireAdmin, deleteFood);
 
 export default router;

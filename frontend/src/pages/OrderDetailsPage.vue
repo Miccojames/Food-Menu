@@ -37,7 +37,7 @@
 
           <!-- Customer Info -->
           <div class="section">
-            <div class="section-label">👤 Customer</div>
+            <div class="section-label">Customer</div>
             <div class="customer-card">
               <div class="customer-avatar">{{ order.customerName.charAt(0).toUpperCase() }}</div>
               <div>
@@ -51,7 +51,7 @@
 
           <!-- Items -->
           <div class="section">
-            <div class="section-label">🛒 Items Ordered</div>
+            <div class="section-label">Items Ordered</div>
             <div class="items-list">
               <div v-for="item in order.items" :key="item.id" class="item-row">
                 <div class="item-left">
@@ -71,9 +71,22 @@
             <span class="total-amount">₱{{ order.totalAmount }}</span>
           </div>
 
+          <!-- Status History -->
+          <div v-if="order.statusHistory?.length" class="section">
+            <div class="section-label">Status History</div>
+            <div class="history-list">
+              <div v-for="h in [...order.statusHistory].reverse()" :key="h.id" class="history-row">
+                <span class="history-dot" :class="getStatusClass(h.toStatus)"></span>
+                <span class="history-status">{{ h.toStatus }}</span>
+                <span class="history-from" v-if="h.fromStatus">← {{ h.fromStatus }}</span>
+                <span class="history-time">{{ formatDate(h.createdAt) }}</span>
+              </div>
+            </div>
+          </div>
+
           <!-- Admin Status Update (only for admin) -->
           <div v-if="isAdmin" class="admin-actions">
-            <div class="admin-actions-label">🔧 Update Status</div>
+            <div class="admin-actions-label">Update Status</div>
             <div class="status-btns">
               <button
                 v-for="s in statuses"
@@ -90,7 +103,6 @@
 
           <!-- User view order message (only for users) -->
           <div v-if="!isAdmin" class="user-status-banner" :class="getStatusClass(order.status)">
-            <span class="banner-emoji">{{ getStatusEmoji(order.status) }}</span>
             <div>
               <div class="banner-title">{{ order.status }}</div>
               <div class="banner-sub">{{ getStatusMessage(order.status) }}</div>
@@ -101,7 +113,7 @@
 
         <!-- Not Found -->
         <div v-else class="od-not-found">
-          <div style="font-size: 56px;">😕</div>
+          <div class="nf-icon">!</div>
           <h2>Order Not Found</h2>
           <p>The requested order does not exist.</p>
           <button class="go-back-btn" @click="$router.push('/menu')">Go to Menu</button>
@@ -129,11 +141,11 @@ const loading = ref(true);
 const isAdmin = computed(() => authService.isAdmin());
 
 const statuses = [
-  { value: 'Pending', label: '⏳ Pending', cls: 'btn-pending' },
-  { value: 'Preparing', label: '👨‍🍳 Preparing', cls: 'btn-preparing' },
-  { value: 'Ready', label: '✅ Ready', cls: 'btn-ready' },
-  { value: 'Completed', label: '🎉 Completed', cls: 'btn-completed' },
-  { value: 'Cancelled', label: '❌ Cancelled', cls: 'btn-cancelled' }
+  { value: 'Pending', label: 'Pending', cls: 'btn-pending' },
+  { value: 'Preparing', label: 'Preparing', cls: 'btn-preparing' },
+  { value: 'Ready', label: 'Ready', cls: 'btn-ready' },
+  { value: 'Completed', label: 'Completed', cls: 'btn-completed' },
+  { value: 'Cancelled', label: 'Cancelled', cls: 'btn-cancelled' }
 ];
 
 const goBack = () => {
@@ -159,14 +171,14 @@ const updateStatus = async (status) => {
   try {
     await orderService.updateOrderStatus(order.value.id, status);
     if (status === 'Cancelled') {
-      $q.notify({ color: 'warning', message: 'Order cancelled and removed' });
-      goBack();
-      return;
+      $q.notify({ color: 'warning', message: 'Order cancelled' });
+    } else {
+      $q.notify({ color: 'positive', message: `Status updated to ${status}` });
     }
-    order.value.status = status;
-    $q.notify({ color: 'positive', message: `Status updated to ${status}` });
+    // Refetch to reload status history
+    await fetchOrder();
   } catch (error) {
-    $q.notify({ color: 'negative', message: 'Failed to update status' });
+    $q.notify({ color: 'negative', message: error.message || 'Failed to update status' });
   }
 };
 
@@ -179,11 +191,6 @@ const getStatusClass = (status) => {
     Cancelled: 'status-cancelled'
   };
   return map[status] || '';
-};
-
-const getStatusEmoji = (status) => {
-  const map = { Pending: '⏳', Preparing: '👨‍🍳', Ready: '🔔', Completed: '🎉', Cancelled: '❌' };
-  return map[status] || '📋';
 };
 
 const getStatusMessage = (status) => {
@@ -447,6 +454,53 @@ onMounted(fetchOrder);
   letter-spacing: -0.5px;
 }
 
+/* Status History */
+.history-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.history-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 12px;
+  background: #f8fafc;
+  border-radius: 8px;
+  font-size: 13px;
+}
+
+.history-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #cbd5e1;
+  flex-shrink: 0;
+}
+
+.history-dot.status-pending { background: #e65100; }
+.history-dot.status-preparing { background: #1565c0; }
+.history-dot.status-ready { background: #00695c; }
+.history-dot.status-completed { background: #2e7d32; }
+.history-dot.status-cancelled { background: #c62828; }
+
+.history-status {
+  font-weight: 700;
+  color: #333;
+}
+
+.history-from {
+  color: #aaa;
+  font-size: 12px;
+}
+
+.history-time {
+  margin-left: auto;
+  color: #999;
+  font-size: 12px;
+}
+
 /* Admin Actions */
 .admin-actions {
   background: #fafafa;
@@ -512,11 +566,6 @@ onMounted(fetchOrder);
   margin-top: 8px;
 }
 
-.banner-emoji {
-  font-size: 36px;
-  flex-shrink: 0;
-}
-
 .banner-title {
   font-size: 18px;
   font-weight: 800;
@@ -566,5 +615,18 @@ onMounted(fetchOrder);
 .go-back-btn:hover {
   transform: translateY(-2px);
   box-shadow: 0 8px 20px rgba(255,94,98,0.3);
+}
+.nf-icon {
+  width: 72px;
+  height: 72px;
+  margin: 0 auto 16px;
+  border-radius: 50%;
+  background: #f1f5f9;
+  color: #94a3b8;
+  font-size: 40px;
+  font-weight: 900;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 </style>

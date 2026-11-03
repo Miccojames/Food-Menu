@@ -1,7 +1,7 @@
 <template>
   <section class="hero">
     <div class="hero-content">
-      <span class="hero-pill">✨ Fresh & Handcrafted</span>
+      <span class="hero-pill">Fresh &amp; Handcrafted</span>
       <h2>Delicious food,<br>delivered to you.</h2>
       <p>Explore our crafted menu and find your next craving.</p>
       <button class="hero-btn" @click="scrollToMenu">

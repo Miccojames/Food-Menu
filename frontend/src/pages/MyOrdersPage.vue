@@ -26,7 +26,6 @@
       <div class="orders-container">
 
         <div class="orders-hero">
-          <div class="hero-avatar">📋</div>
           <h1 class="hero-title">Your Order History</h1>
           <p class="hero-sub">Hello, <strong>{{ userName }}</strong>! Here are all your placed orders.</p>
         </div>
@@ -39,7 +38,6 @@
 
         <!-- Empty -->
         <div v-else-if="orders.length === 0" class="orders-empty">
-          <div class="empty-icon">🍽️</div>
           <h2>No orders yet!</h2>
           <p>You haven't placed any orders. Go explore our menu!</p>
           <button class="go-menu-btn" @click="$router.push('/menu')">Browse Menu</button>
@@ -95,11 +93,9 @@ const logout = () => {
 const fetchMyOrders = async () => {
   loading.value = true;
   try {
-    const res = await orderService.getOrders();
-    // Filter by user name stored locally
-    orders.value = res.data.filter(
-      o => o.customerName.toLowerCase() === userName.toLowerCase()
-    );
+    // Server returns only the logged-in user's orders
+    const res = await orderService.getMyOrders();
+    orders.value = res.data;
   } catch (err) {
     console.error('Failed to fetch orders', err);
   } finally {
@@ -213,11 +209,6 @@ onMounted(fetchMyOrders);
   margin-bottom: 40px;
 }
 
-.hero-avatar {
-  font-size: 56px;
-  margin-bottom: 12px;
-}
-
 .hero-title {
   font-size: 32px;
   font-weight: 800;
@@ -260,11 +251,6 @@ onMounted(fetchMyOrders);
   background: white;
   border-radius: 24px;
   box-shadow: 0 4px 20px rgba(0,0,0,0.04);
-}
-
-.empty-icon {
-  font-size: 56px;
-  margin-bottom: 16px;
 }
 
 .orders-empty h2 {

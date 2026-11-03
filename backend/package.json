@@ -7,6 +7,8 @@
   "scripts": {
     "dev": "nodemon src/server.js",
     "start": "node src/server.js",
+    "test": "vitest run",
+    "lint": "oxlint src seed tests",
     "seed": "node seed/seed.js",
     "prisma:generate": "prisma generate",
     "prisma:push": "prisma db push",
@@ -14,16 +16,23 @@
   },
   "dependencies": {
     "@prisma/client": "6.4.0",
+    "bcryptjs": "^3.0.3",
     "cors": "^2.8.5",
     "dotenv": "^16.4.5",
     "express": "^4.19.2",
     "express-rate-limit": "^7.3.1",
     "helmet": "^7.1.0",
-    "morgan": "^1.10.0"
+    "jsonwebtoken": "^9.0.3",
+    "morgan": "^1.10.0",
+    "multer": "^2.5.0",
+    "zod": "^4.6.7"
   },
   "devDependencies": {
     "nodemon": "^3.1.2",
-    "prisma": "6.4.0"
+    "oxlint": "^1.91.0",
+    "prisma": "6.4.0",
+    "supertest": "^7.3.1",
+    "vitest": "^5.1.0"
   },
   "allowScripts": {
     "@prisma/engines@5.22.0": true,

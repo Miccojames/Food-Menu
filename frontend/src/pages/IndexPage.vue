@@ -1,53 +1,62 @@
 <template>
-  <AppHeader @cart-click="scrollToOrder" />
+  <div class="menu-layout">
+    <AppSidebar
+      :mobile-open="mobileOpen"
+      @cart-click="scrollToOrder"
+      @toggle-mobile="mobileOpen = !mobileOpen"
+      @close="mobileOpen = false"
+    />
 
-  <main class="page-content">
-    <div class="container">
-      <HeroSection />
+    <div class="menu-main">
+      <main class="page-content">
+        <div class="container">
+          <HeroSection />
 
-      <div class="main-grid">
-        <!-- MENU SECTION -->
-        <div class="menu-section">
-          <FoodSearch v-model="search" @search="fetchFoods" />
-          
-          <CategoryFilter 
-            v-model="selectedCategory" 
-            :categories="categories" 
-          />
+          <div class="main-grid">
+            <!-- MENU SECTION -->
+            <div class="menu-section">
+              <FoodSearch v-model="search" @search="fetchFoods" />
 
-          <!-- Loading State -->
-          <LoadingState v-if="loading" />
+              <CategoryFilter
+                v-model="selectedCategory"
+                :categories="categories"
+              />
 
-          <!-- Error State -->
-          <EmptyState 
-            v-else-if="error" 
-            title="Unable to load the menu" 
-            :message="error" 
-            :show-clear="false" 
-          />
+              <!-- Loading State -->
+              <LoadingState v-if="loading" />
 
-          <!-- FOODS GRID -->
-          <div v-else-if="foods.length > 0" class="foods-grid">
-            <FoodCard
-              v-for="(food, index) in foods"
-              :key="food.id"
-              :food="food"
-              :is-favorite="favStore.isFavorite(food.id)"
-              :style="{ animationDelay: (index * 0.05) + 's' }"
-              @add-to-cart="cartStore.addToCart"
-              @toggle-favorite="favStore.toggleFavorite(food.id)"
-            />
+              <!-- Error State -->
+              <EmptyState
+                v-else-if="error"
+                title="Unable to load the menu"
+                :message="error"
+                :show-clear="false"
+              />
+
+              <!-- FOODS GRID -->
+              <div v-else-if="foods.length > 0" class="foods-grid">
+                <FoodCard
+                  v-for="(food, index) in foods"
+                  :key="food.id"
+                  :food="food"
+                  :is-favorite="favStore.isFavorite(food.id)"
+                  :style="{ animationDelay: (index * 0.05) + 's' }"
+                  @add-to-cart="cartStore.addToCart"
+                  @toggle-favorite="favStore.toggleFavorite(food.id)"
+                />
+              </div>
+
+              <!-- EMPTY STATE -->
+              <EmptyState v-else @clear="clearFilters" />
+            </div>
+
+            <!-- ORDER PANEL SIDEBAR -->
+            <OrderPanel id="order-panel" @checkout="showCheckout = true" />
           </div>
-
-          <!-- EMPTY STATE -->
-          <EmptyState v-else @clear="clearFilters" />
         </div>
-
-        <!-- ORDER PANEL SIDEBAR -->
-        <OrderPanel id="order-panel" @checkout="showCheckout = true" />
-      </div>
+      </main>
     </div>
-  </main>
+  </div>
 
   <CheckoutDialog v-model="showCheckout" @order-placed="onOrderPlaced" />
 </template>
@@ -61,7 +70,7 @@ import { useFavoriteStore } from '../stores/favorite.store';
 import { foodService } from '../services/food.service';
 import { categoryService } from '../services/category.service';
 
-import AppHeader from '../components/AppHeader.vue';
+import AppSidebar from '../components/AppSidebar.vue';
 import HeroSection from '../components/HeroSection.vue';
 import FoodSearch from '../components/FoodSearch.vue';
 import CategoryFilter from '../components/CategoryFilter.vue';
@@ -83,6 +92,7 @@ const foods = ref([]);
 const loading = ref(true);
 const error = ref(null);
 const showCheckout = ref(false);
+const mobileOpen = ref(false);
 
 const fetchCategories = async () => {
   try {
@@ -140,13 +150,26 @@ onMounted(() => {
 </script>
 
 <style scoped>
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
+
+/* Sidebar + content layout */
+.menu-layout {
+  display: flex;
+  min-height: 100vh;
+  background: #f8fafc;
+}
+
+.menu-main {
+  flex: 1;
+  min-width: 0;
+}
 
 .page-content {
   background-color: #f8fafc;
   font-family: 'Inter', sans-serif;
   padding: 24px 0 80px;
-  min-height: calc(100vh - 64px);
+  min-height: 100vh;
+  box-sizing: border-box;
 }
 
 .container {
@@ -155,6 +178,7 @@ onMounted(() => {
   padding: 0 24px;
 }
 
+/* Mobile: stack the top bar above the content (rail becomes a fixed drawer) */
 .main-grid {
   display: grid;
   grid-template-columns: 1fr 340px;
@@ -173,6 +197,11 @@ onMounted(() => {
 }
 
 @media (max-width: 960px) {
+  /* Stack the mobile top bar above content (sidebar becomes a fixed drawer) */
+  .menu-layout {
+    flex-direction: column;
+  }
+
   .main-grid {
     grid-template-columns: 1fr;
   }
