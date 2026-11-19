@@ -24,8 +24,12 @@ app.use(helmet({
   // Allow the Vue dev server / served frontend to load images from /uploads
   crossOriginResourcePolicy: { policy: 'cross-origin' },
 }));
+// Allow the web dev server AND the Capacitor app (WebView origin) to call the API
+const allowedOrigins = (process.env.CLIENT_URL || 'http://localhost:9000')
+  .split(',')
+  .concat(['https://localhost', 'http://localhost', 'capacitor://localhost']);
 app.use(cors({
-  origin: process.env.CLIENT_URL || 'http://localhost:9000',
+  origin: allowedOrigins,
   credentials: true
 }));
 app.use(express.json({ limit: '100kb' }));
