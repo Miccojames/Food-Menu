@@ -629,4 +629,71 @@ onMounted(fetchOrder);
   align-items: center;
   justify-content: center;
 }
+
+/* ===== Mobile ===== */
+@media (max-width: 600px) {
+  .od-header-content {
+    padding: 14px 12px;
+  }
+
+  .back-btn {
+    padding: 8px 12px;
+    font-size: 13px;
+  }
+
+  .brand-name {
+    font-size: 16px;
+  }
+
+  .od-body {
+    padding: 24px 12px;
+  }
+
+  .order-head {
+    padding: 20px 18px 16px;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .order-num {
+    font-size: 20px;
+  }
+
+  .od-divider {
+    margin: 0 18px;
+  }
+
+  .section {
+    padding: 16px 18px;
+  }
+
+  .total-row {
+    padding: 16px 18px;
+  }
+
+  .total-amount {
+    font-size: 24px;
+  }
+
+  .admin-actions {
+    padding: 16px 18px;
+  }
+
+  .user-status-banner {
+    margin: 8px 18px 20px;
+    padding: 16px;
+  }
+
+  /* History rows: timestamp drops to its own line instead of colliding */
+  .history-row {
+    flex-wrap: wrap;
+    row-gap: 4px;
+    padding: 8px 10px;
+  }
+
+  .item-row {
+    padding: 10px 12px;
+    gap: 8px;
+  }
+}
 </style>

@@ -29,3 +29,12 @@ backend/uploads/*
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+
+# Android local config (machine-specific SDK paths)
+frontend/android/local.properties
+frontend/android/.gradle/
+frontend/android/app/build/
+
+# Capacitor web build output + accidental duplicate folder
+frontend/www/
+frontend/menu/

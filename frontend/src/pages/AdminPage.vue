@@ -1650,4 +1650,182 @@ onMounted(() => {
     grid-template-columns: 1fr;
   }
 }
+
+/* ===== Mobile: sidebar becomes a horizontal scrollable top strip ===== */
+@media (max-width: 960px) {
+  .admin-root {
+    flex-direction: column;
+  }
+
+  .sidebar {
+    width: 100%;
+    min-height: auto;
+    height: auto;
+    flex-direction: row;
+    align-items: center;
+    position: static;
+    border-right: none;
+    border-bottom: 1px solid #eee;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .sidebar-brand {
+    border-bottom: none;
+    padding: 14px 16px;
+    flex-shrink: 0;
+  }
+
+  .sidebar-nav {
+    flex-direction: row;
+    padding: 10px 8px;
+    gap: 6px;
+    flex-shrink: 0;
+  }
+
+  .nav-item {
+    width: auto;
+    white-space: nowrap;
+    padding: 10px 14px;
+  }
+
+  .sidebar-footer {
+    border-top: none;
+    padding: 10px 12px;
+    flex-shrink: 0;
+    margin-left: auto;
+  }
+
+  .logout-nav-btn {
+    width: auto;
+    white-space: nowrap;
+    padding: 10px 14px;
+  }
+
+  .topbar {
+    padding: 14px 16px;
+  }
+
+  .admin-content {
+    padding: 20px 16px;
+  }
+
+  /* Stat cards: 4 -> 2 columns */
+  .stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+    margin-bottom: 24px;
+  }
+
+  .stat-card {
+    padding: 16px;
+    gap: 10px;
+  }
+
+  .stat-value {
+    font-size: 28px;
+  }
+
+  .stat-label {
+    font-size: 12px;
+  }
+
+  /* Headers wrap instead of overflowing */
+  .section-header {
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-bottom: 16px;
+  }
+
+  .orders-controls {
+    flex-wrap: wrap;
+  }
+
+  /* Tables: swipe horizontally inside the card (page itself never scrolls) */
+  .modern-table-card {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .mtable {
+    min-width: 640px;
+  }
+
+  .pagination {
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .dash-card {
+    padding: 16px;
+    min-width: 0;
+  }
+
+  /* Chart: grid track must not blow out to content width... */
+  .dashboard-split {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  /* ...chart box stays card-width; bars refuse to shrink so it scrolls inside */
+  .bar-chart {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    gap: 3px;
+    padding-bottom: 4px;
+  }
+
+  .bar-col {
+    flex: 0 0 auto;
+  }
+
+  .bar-label {
+    white-space: nowrap;
+  }
+}
+
+/* ===== Very small phones ===== */
+@media (max-width: 480px) {
+  .admin-content {
+    padding: 16px 12px;
+  }
+
+  .topbar-title {
+    font-size: 16px;
+  }
+
+  .admin-badge {
+    padding: 6px 12px;
+    font-size: 12px;
+  }
+
+  .section-title {
+    font-size: 19px;
+  }
+
+  /* Modal: single column + tighter padding */
+  .modal-overlay {
+    padding: 12px;
+  }
+
+  .modal-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .modal-header {
+    padding: 18px 18px;
+  }
+
+  .modal-body {
+    padding: 18px;
+  }
+
+  .modal-footer {
+    flex-direction: column-reverse;
+  }
+
+  .cancel-btn,
+  .submit-btn {
+    width: 100%;
+  }
+}
 </style>

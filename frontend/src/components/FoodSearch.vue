@@ -61,6 +61,7 @@ const onInput = (e) => {
 
 .search-input {
   flex: 1;
+  min-width: 0; /* allow shrinking so the Search button never overflows on mobile */
   border: none;
   outline: none;
   font-size: 14px;
@@ -92,5 +93,17 @@ const onInput = (e) => {
 .search-btn:hover {
   box-shadow: 0 6px 16px rgba(255, 94, 98, 0.35);
   transform: translateY(-1px);
+}
+
+@media (max-width: 480px) {
+  .search-inner {
+    gap: 8px;
+    padding: 2px 6px 2px 12px;
+  }
+
+  .search-btn {
+    padding: 10px 14px;
+    font-size: 13px;
+  }
 }
 </style>

@@ -374,4 +374,69 @@ onMounted(fetchMyOrders);
 .order-card:hover .view-btn {
   color: #ff5e62;
 }
+
+/* ===== Mobile ===== */
+@media (max-width: 640px) {
+  .header-content {
+    padding: 12px;
+    gap: 8px;
+  }
+
+  .back-btn,
+  .logout-btn {
+    padding: 8px 12px;
+    font-size: 12px;
+    height: 34px;
+  }
+
+  .brand-name {
+    font-size: 17px;
+  }
+
+  .orders-body {
+    padding: 32px 16px;
+  }
+
+  .hero-title {
+    font-size: 26px;
+  }
+
+  .order-card {
+    padding: 18px 16px;
+    gap: 10px;
+  }
+
+  .order-card-right {
+    margin-left: 10px;
+  }
+
+  .order-total {
+    font-size: 19px;
+  }
+}
+
+@media (max-width: 400px) {
+  .header-content {
+    padding: 10px 8px;
+    gap: 6px;
+  }
+
+  .back-btn,
+  .logout-btn {
+    padding: 7px 9px;
+    font-size: 11px;
+  }
+
+  .brand-name {
+    font-size: 15px;
+  }
+
+  .orders-body {
+    padding: 24px 12px;
+  }
+
+  .order-card {
+    padding: 16px 14px;
+  }
+}
 </style>
